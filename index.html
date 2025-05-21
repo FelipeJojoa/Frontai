@@ -2,55 +2,100 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Chat IA - OpenRouter</title>
+    <title>Chat Felipe J - OpenRouter</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            background-color: #f7f7f7;
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .chat-container {
+            background: white;
+            padding: 30px;
+            max-width: 700px;
+            width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
             color: #333;
         }
 
-        select, textarea, button {
-            font-size: 16px;
-            padding: 8px;
-            margin-top: 10px;
+        select, textarea {
             width: 100%;
-            max-width: 600px;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            transition: border 0.2s;
+        }
+
+        select:focus, textarea:focus {
+            border-color: #4a90e2;
+            outline: none;
+            background-color: #fff;
         }
 
         button {
-            background-color: #4CAF50;
-            color: white;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
             border: none;
+            border-radius: 8px;
+            background-color: #4a90e2;
+            color: white;
             cursor: pointer;
+            transition: background-color 0.2s;
         }
 
         button:hover {
-            background-color: #45a049;
+            background-color: #3b78c5;
         }
 
         #responseArea {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-top: 20px;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            min-height: 100px;
             white-space: pre-wrap;
+            color: #222;
         }
     </style>
 </head>
 <body>
 
-    <h1>Chat con Modelos de OpenRouter</h1>
+<div class="chat-container">
+    <h1>Chat Felipe J</h1>
 
     <label for="modeSelect">Selecciona el modelo:</label>
     <select id="modeSelect">
         <option value="google/gemma-7b-it:free">Gemma 7B (Google)</option>
         <option value="mistralai/mistral-7b-instruct:free">Mistral 7B</option>
         <option value="nousresearch/nous-capybara-7b:free">Capybara 7B</option>
+        <option value="deepseek/deepseek-prover-v2:free">DeepSeek Prover v2</option>
     </select>
 
     <label for="userPrompt">Escribe tu mensaje:</label>
@@ -58,53 +103,54 @@
 
     <button onclick="sendPrompt()">Enviar</button>
 
-    <h3>Respuesta:</h3>
     <div id="responseArea">Esperando una consulta...</div>
+</div>
 
-    <script>
-        async function sendPrompt() {
-            const model = document.getElementById("modeSelect").value;
-            const prompt = document.getElementById("userPrompt").value;
-            const responseArea = document.getElementById("responseArea");
+<script>
+    async function sendPrompt() {
+        const model = document.getElementById("modeSelect").value;
+        const prompt = document.getElementById("userPrompt").value;
+        const responseArea = document.getElementById("responseArea");
 
-            if (!prompt.trim()) {
-                responseArea.textContent = "Por favor escribe una pregunta.";
-                return;
-            }
-
-            responseArea.textContent = "Esperando respuesta...";
-
-            try {
-                const response = await fetch("https://frontai-vpb6.onrender.com/ai-chat", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        message: prompt,
-                        model: model
-                    })
-                });
-
-                const contentType = response.headers.get("content-type") || "";
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Error HTTP ${response.status}: ${errorText}`);
-                }
-
-                if (!contentType.includes("application/json")) {
-                    const text = await response.text();
-                    throw new Error("La respuesta no es JSON. Texto recibido:\n" + text);
-                }
-
-                const result = await response.json();
-                responseArea.textContent = result.response || "Sin respuesta del modelo.";
-            } catch (error) {
-                responseArea.textContent = "Error: " + error.message;
-            }
+        if (!prompt.trim()) {
+            responseArea.textContent = "Por favor escribe una pregunta.";
+            return;
         }
-    </script>
+
+        responseArea.textContent = "Esperando respuesta...";
+
+        try {
+            const response = await fetch("https://frontai-vpb6.onrender.com/ai-chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: prompt,
+                    model: model
+                })
+            });
+
+            const contentType = response.headers.get("content-type") || "";
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+            }
+
+            if (!contentType.includes("application/json")) {
+                const text = await response.text();
+                throw new Error("La respuesta no es JSON. Texto recibido:\n" + text);
+            }
+
+            const result = await response.json();
+            responseArea.textContent = result.response || "Sin respuesta del modelo.";
+        } catch (error) {
+            responseArea.textContent = "Error: " + error.message;
+        }
+    }
+</script>
 
 </body>
 </html>
+
