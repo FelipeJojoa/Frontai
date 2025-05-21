@@ -86,9 +86,16 @@
                     })
                 });
 
+                const contentType = response.headers.get("content-type") || "";
+
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`Error HTTP ${response.status}: ${errorText}`);
+                }
+
+                if (!contentType.includes("application/json")) {
+                    const text = await response.text();
+                    throw new Error("La respuesta no es JSON. Texto recibido:\n" + text);
                 }
 
                 const result = await response.json();
