@@ -12,7 +12,7 @@
       --input-bg: #fff7f0;
       --user-msg: #ffecd6;
       --bot-msg: #fffdf9;
-      --text: #000000; /* Letra negra */
+      --text: #000000;
       --primary: #5a7c5f;
       --primary-hover: #077e27;
       --border: #161615;
@@ -31,7 +31,7 @@
       color: var(--text);
     }
 
-    .chat-container {
+    main {
       display: flex;
       flex-direction: column;
       height: 100%;
@@ -50,15 +50,6 @@
       font-size: 1.2rem;
       font-weight: 500;
       margin: 0;
-    }
-
-    #model-select {
-      padding: 6px 10px;
-      font-size: 0.95rem;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      background-color: #fff;
-      color: var(--text);
     }
 
     .input-area {
@@ -96,7 +87,7 @@
       color: #fff;
       border: none;
       border-radius: var(--radius);
-      padding: 6px 12px; /* Tamaño más pequeño */
+      padding: 6px 12px;
       font-size: 0.9rem;
       cursor: pointer;
       transition: background-color 0.2s ease;
@@ -127,7 +118,7 @@
       white-space: pre-wrap;
       word-break: break-word;
       border: 1px solid var(--border);
-      color: var(--text); /* Letra negra también en mensajes */
+      color: var(--text);
     }
 
     .user-message {
@@ -160,93 +151,84 @@
 </head>
 <body>
 
-  <div class="chat-container">
-    <div class="chat-header">
+  <main class="chat-container" role="main">
+    <header class="chat-header">
       <h5 class="chat-title">Chat IA</h5>
-      <select id="model-select">
-        <option value="ai-chat">Llama 3.3</option>
-      </select>
-    </div>
+    </header>
 
-    <div class="input-area">
-      <form id="chat-form">
-        <textarea id="message-input" placeholder="Escribe tu consulta aquí..." required></textarea>
+    <section id="chat-box" aria-live="polite" aria-label="Conversación IA"></section>
+
+    <section class="input-area">
+      <form id="chat-form" autocomplete="off">
+        <textarea id="message-input" placeholder="Escribe tu consulta aquí..." required aria-label="Mensaje"></textarea>
         <button type="submit" class="send-btn">Enviar</button>
       </form>
-    </div>
-
-    <div id="chat-box"></div>
-  </div>
+    </section>
+  </main>
 
   <script>
-  const chatForm = document.getElementById('chat-form');
-  const chatBox = document.getElementById('chat-box');
-  const messageInput = document.getElementById('message-input');
-  const modelSelect = document.getElementById('model-select');
+    const chatForm = document.getElementById('chat-form');
+    const chatBox = document.getElementById('chat-box');
+    const messageInput = document.getElementById('message-input');
 
-  chatForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const message = messageInput.value.trim();
-    if (!message) return;
-
-    appendMessage('user', message);
-    messageInput.value = '';
-    messageInput.rows = 6;
-
-    appendMessage('bot', 'Escribiendo...');
-
-    const selectedModel = modelSelect.value;
-
-    try {
-      const response = await fetch(`https://frontai-vpb6.onrender.com/${selectedModel}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-      });
-
-      // Validación antes de parsear a JSON
-      if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status}`);
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("⚠️ Respuesta del servidor no es JSON.");
-      }
-
-      const data = await response.json();
-      removeLastBotMessage();
-      appendMessage('bot', data.reply || '⚠️ Respuesta vacía');
-    } catch (error) {
-      removeLastBotMessage();
-      appendMessage('bot', error.message || '⚠️ Error al comunicarse con el servidor.');
-      console.error(error);
-    }
-  });
-
-  messageInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    chatForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      chatForm.requestSubmit();
-    }
-  });
 
-  function appendMessage(sender, text) {
-    const messageDiv = document.createElement('div');
-    messageDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message');
-    messageDiv.textContent = text;
-    chatBox.appendChild(messageDiv);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+      const message = messageInput.value.trim();
+      if (!message) return;
 
-  function removeLastBotMessage() {
-    const messages = chatBox.querySelectorAll('.bot-message');
-    if (messages.length > 0) {
-      messages[messages.length - 1].remove();
+      appendMessage('user', message);
+      messageInput.value = '';
+      messageInput.focus();
+      appendMessage('bot', 'Escribiendo...');
+
+      try {
+        const response = await fetch('https://frontai-vpb6.onrender.com/ai-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+
+        if (!response.ok) throw new Error(`Error del servidor: ${response.status}`);
+
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("⚠️ Respuesta del servidor no es JSON.");
+        }
+
+        const data = await response.json();
+        removeLastBotMessage();
+        appendMessage('bot', data.reply || '⚠️ Respuesta vacía');
+      } catch (error) {
+        removeLastBotMessage();
+        appendMessage('bot', error.message || '⚠️ Error al comunicarse con el servidor.');
+        console.error(error);
+      }
+    });
+
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        chatForm.requestSubmit();
+      }
+    });
+
+    function appendMessage(sender, text) {
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message');
+      messageDiv.textContent = text;
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
-  }
-</script>
+
+    function removeLastBotMessage() {
+      const messages = chatBox.querySelectorAll('.bot-message');
+      if (messages.length > 0) {
+        messages[messages.length - 1].remove();
+      }
+    }
+  </script>
 </body>
 </html>
+
 
