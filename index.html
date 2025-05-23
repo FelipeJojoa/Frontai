@@ -183,7 +183,7 @@
       appendMessage('bot', 'Escribiendo...');
 
       try {
-        const response = await fetch('https://frontai-vpb6.onrender.com/ai-chat', {
+        const response = await fetch('https://frontai-vpb6.onrender.com/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message })
