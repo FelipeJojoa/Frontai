@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat IA Cálido</title>
+  <title>Chat IA | Dolphin 3.0</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
+    /* Variables CSS para una fácil personalización de colores y fuentes */
     :root {
       --bg: #a9a5a2;
       --panel: #a09d97;
@@ -14,10 +15,11 @@
       --bot-msg: #fffdf9;
       --text: #000000;
       --primary: #5a7c5f;
-      --primary-hover: #077e27;
+      --primary-hover: #4a6c4f; /* Color un poco más oscuro para hover */
       --border: #161615;
       --radius: 10px;
       --font: 'Inter', sans-serif;
+      --error-color: #e74c3c; /* Color para mensajes de error */
     }
 
     body {
@@ -29,12 +31,17 @@
       font-family: var(--font);
       background-color: var(--bg);
       color: var(--text);
+      overflow: hidden; /* Evita scroll de la página principal */
     }
 
     main {
       display: flex;
       flex-direction: column;
       height: 100%;
+      max-width: 800px; /* Limita el ancho del chat para mejor lectura en pantallas grandes */
+      width: 100%;
+      margin: 0 auto; /* Centra el contenedor principal */
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Sombra sutil */
     }
 
     .chat-header {
@@ -44,6 +51,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0; /* No encoger el header */
     }
 
     .chat-title {
@@ -55,12 +63,14 @@
     .input-area {
       padding: 20px;
       background-color: var(--panel);
-      border-bottom: 1px solid var(--border);
+      border-top: 1px solid var(--border); /* Cambiado a border-top */
+      flex-shrink: 0; /* No encoger el input area */
     }
 
     #chat-form {
       display: flex;
       gap: 10px;
+      align-items: flex-end; /* Alinea el botón al final del textarea */
     }
 
     textarea {
@@ -73,13 +83,15 @@
       background-color: var(--input-bg);
       font-family: var(--font);
       color: var(--text);
-      height: 120px;
+      min-height: 40px; /* Altura mínima para una línea */
+      max-height: 150px; /* Altura máxima para evitar que crezca demasiado */
+      overflow-y: auto; /* Permite scroll si el contenido es mucho */
     }
 
     textarea:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.15);
+      box-shadow: 0 0 0 2px rgba(90, 124, 95, 0.3); /* Sombra basada en primary */
     }
 
     .send-btn {
@@ -87,16 +99,23 @@
       color: #fff;
       border: none;
       border-radius: var(--radius);
-      padding: 6px 12px;
-      font-size: 0.9rem;
+      padding: 10px 20px; /* Ajuste de padding */
+      font-size: 1rem; /* Ajuste de tamaño de fuente */
       cursor: pointer;
-      transition: background-color 0.2s ease;
-      height: 40px;
-      align-self: flex-end;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      height: fit-content; /* Se ajusta al contenido */
+      display: flex; /* Para centrar texto si es necesario */
+      align-items: center;
+      justify-content: center;
     }
 
     .send-btn:hover {
       background-color: var(--primary-hover);
+      transform: translateY(-1px); /* Efecto hover sutil */
+    }
+
+    .send-btn:active {
+      transform: translateY(0); /* Efecto click */
     }
 
     #chat-box {
@@ -115,8 +134,8 @@
       margin-bottom: 14px;
       font-size: 0.95rem;
       line-height: 1.5;
-      white-space: pre-wrap;
-      word-break: break-word;
+      white-space: pre-wrap; /* Mantiene saltos de línea y espacios */
+      word-break: break-word; /* Rompe palabras largas */
       border: 1px solid var(--border);
       color: var(--text);
     }
@@ -132,6 +151,32 @@
       align-self: flex-start;
     }
 
+    .bot-typing {
+      background-color: #e0e0e0; /* Color diferente para "Escribiendo..." */
+      font-style: italic;
+      color: #555;
+    }
+    
+    .error-message {
+        background-color: #ffe6e6; /* Fondo claro para errores */
+        color: var(--error-color); /* Texto rojo para errores */
+        border: 1px solid var(--error-color);
+        font-weight: 500;
+        text-align: center;
+        align-self: center; /* Centrar el mensaje de error */
+    }
+
+
+    /* Media queries para responsividad */
+    @media (max-width: 768px) {
+        main {
+            margin: 0;
+            width: 100%;
+            border-radius: 0;
+            box-shadow: none;
+        }
+    }
+
     @media (max-width: 600px) {
       .chat-header, .input-area {
         padding: 12px 16px;
@@ -139,12 +184,17 @@
 
       textarea {
         font-size: 0.9rem;
-        height: 100px;
+        min-height: 36px; /* Altura mínima más pequeña */
       }
 
       .send-btn {
-        padding: 4px 10px;
-        font-size: 0.85rem;
+        padding: 8px 16px;
+        font-size: 0.9rem;
+      }
+
+      .chat-message {
+        font-size: 0.9rem;
+        padding: 10px 14px;
       }
     }
   </style>
@@ -153,82 +203,136 @@
 
   <main class="chat-container" role="main">
     <header class="chat-header">
-      <h5 class="chat-title">Chat IA</h5>
+      <h5 class="chat-title">Chat IA | Dolphin 3.0</h5>
     </header>
 
-    <section id="chat-box" aria-live="polite" aria-label="Conversación IA"></section>
+    <section id="chat-box" aria-live="polite" aria-label="Conversación con el Asistente IA"></section>
 
     <section class="input-area">
       <form id="chat-form" autocomplete="off">
-        <textarea id="message-input" placeholder="Escribe tu consulta aquí..." required aria-label="Mensaje"></textarea>
+        <textarea id="message-input" placeholder="Escribe tu consulta aquí..." required aria-label="Mensaje para el Asistente IA"></textarea>
         <button type="submit" class="send-btn">Enviar</button>
       </form>
     </section>
   </main>
 
   <script>
+    // --- Configuración de la URL del Backend ---
+    // Idealmente, esta URL debería ser inyectada por el entorno de despliegue
+    // o cargada de un archivo de configuración si el HTML es estático.
+    // Para este caso, la hacemos configurable.
+    const BACKEND_URL = 'https://frontai-vpb6.onrender.com'; // URL de tu backend
+    const CHAT_ENDPOINT = '/api/ai-chat'; // Prefijo de la API y endpoint específico
+
+    // Elementos del DOM
     const chatForm = document.getElementById('chat-form');
     const chatBox = document.getElementById('chat-box');
     const messageInput = document.getElementById('message-input');
 
+    // --- Event Listener para el Envío del Formulario ---
     chatForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
+      e.preventDefault(); // Evita el envío tradicional del formulario
 
       const message = messageInput.value.trim();
-      if (!message) return;
+      if (!message) {
+        // No hacer nada si el mensaje está vacío
+        return;
+      }
 
+      // 1. Mostrar el mensaje del usuario
       appendMessage('user', message);
-      messageInput.value = '';
-      messageInput.focus();
-      appendMessage('bot', 'Escribiendo...');
+      messageInput.value = ''; // Limpiar el input
+      messageInput.focus(); // Reenfocar el input
+
+      // 2. Mostrar un mensaje de "Escribiendo..." del bot
+      const typingMessageElement = appendMessage('bot', 'Escribiendo...', true); // El tercer parámetro indica que es un mensaje temporal
 
       try {
-        const response = await fetch('https://frontai-vpb6.onrender.com/', {
+        // 3. Realizar la petición al backend
+        const response = await fetch(`${BACKEND_URL}${CHAT_ENDPOINT}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message })
         });
 
-        if (!response.ok) throw new Error(`Error del servidor: ${response.status}`);
-
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("⚠️ Respuesta del servidor no es JSON.");
+        // 4. Validar la respuesta HTTP
+        // Verificar si la respuesta es OK (status 2xx) o si es un error HTTP
+        if (!response.ok) {
+          // Si el servidor responde con un status de error (ej. 400, 500)
+          // Intentamos parsear el cuerpo de la respuesta para obtener un mensaje de error detallado
+          let errorDetail = `Error del servidor: ${response.status}`;
+          try {
+            const errorData = await response.json();
+            // Asumiendo que el backend envía errores con una clave 'reply' o 'detail'
+            errorDetail = errorData.reply || errorData.detail || JSON.stringify(errorData);
+          } catch (jsonError) {
+            // Si la respuesta de error no es JSON, capturamos el texto crudo
+            const errorText = await response.text();
+            errorDetail = `Error del servidor (${response.status}): ${errorText.substring(0, 100)}...`; // Limitar para evitar mensajes muy largos
+          }
+          throw new Error(errorDetail); // Lanzar el error para ser capturado por el catch
         }
 
+        // 5. Validar que la respuesta es JSON (crucial para el error original)
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          // Si el backend no envía Content-Type: application/json, esto es un error.
+          throw new Error("⚠️ El servidor no devolvió una respuesta JSON válida.");
+        }
+
+        // 6. Parsear la respuesta JSON
         const data = await response.json();
-        removeLastBotMessage();
-        appendMessage('bot', data.reply || '⚠️ Respuesta vacía');
+
+        // 7. Eliminar el mensaje de "Escribiendo..." y mostrar la respuesta real del bot
+        removeMessage(typingMessageElement); // Elimina el mensaje temporal
+        appendMessage('bot', data.reply || '⚠️ No se recibió una respuesta de la IA.');
+
       } catch (error) {
-        removeLastBotMessage();
-        appendMessage('bot', error.message || '⚠️ Error al comunicarse con el servidor.');
-        console.error(error);
+        // 8. Manejo de errores de red o de la API
+        removeMessage(typingMessageElement); // Asegurarse de eliminar el mensaje de "Escribiendo..."
+        appendMessage('bot', `⚠️ Error: ${error.message}`, false, 'error-message'); // Mostrar el error al usuario
+        console.error("Error en la solicitud al backend:", error);
+      } finally {
+        // Asegurarse de que el input de mensaje se pueda usar de nuevo
+        messageInput.disabled = false;
+        chatForm.querySelector('.send-btn').disabled = false;
       }
     });
 
+    // --- Event Listener para Enviar con Enter ---
     messageInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
+        // Si se presiona Enter sin Shift, enviar el formulario
         e.preventDefault();
         chatForm.requestSubmit();
       }
+      // Auto-ajustar la altura del textarea
+      messageInput.style.height = 'auto';
+      messageInput.style.height = messageInput.scrollHeight + 'px';
     });
 
-    function appendMessage(sender, text) {
+    // --- Funciones Auxiliares para Manipular Mensajes ---
+    function appendMessage(sender, text, isTemporary = false, extraClass = '') {
       const messageDiv = document.createElement('div');
       messageDiv.classList.add('chat-message', sender === 'user' ? 'user-message' : 'bot-message');
+      if (isTemporary) {
+        messageDiv.classList.add('bot-typing');
+      }
+      if (extraClass) {
+          messageDiv.classList.add(extraClass);
+      }
       messageDiv.textContent = text;
       chatBox.appendChild(messageDiv);
-      chatBox.scrollTop = chatBox.scrollHeight;
+      chatBox.scrollTop = chatBox.scrollHeight; // Scroll automático al final
+
+      return messageDiv; // Retorna la referencia al elemento creado para poder eliminarlo si es temporal
     }
 
-    function removeLastBotMessage() {
-      const messages = chatBox.querySelectorAll('.bot-message');
-      if (messages.length > 0) {
-        messages[messages.length - 1].remove();
-      }
+    function removeMessage(element) {
+        if (element && element.parentNode === chatBox) {
+            chatBox.removeChild(element);
+        }
     }
   </script>
 </body>
 </html>
-
-
